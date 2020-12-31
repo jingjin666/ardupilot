@@ -318,6 +318,75 @@ void DataFlash_Class::Log_Write_IMU_instance(const uint64_t time_us, const uint8
     WriteBlock(&pkt, sizeof(pkt));
 }
 
+void DataFlash_Class::Log_Write_JKF_Sensor()
+{
+    uint64_t time_us = AP_HAL::micros64();
+    const AP_InertialSensor &ins = AP::ins();
+    const Vector3f &gyro = ins.get_gyro();
+    const Vector3f &accel = ins.get_accel();
+
+    const AP_GPS &gps = AP::gps();
+
+    AP_AHRS &ahrs = AP::ahrs();
+
+    Quaternion quat;
+    ahrs.get_secondary_quaternion(quat);
+    struct log_JKF_Sensor pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_JKFS_MSG),
+        time_us : time_us,
+#if 0
+        gyro_x  : gyro.x,
+        gyro_y  : gyro.y,
+        gyro_z  : gyro.z,
+#endif
+        accel_x : accel.x,
+        accel_y : accel.y,
+        accel_z : accel.z,
+             q1 : quat.q1,
+             q2 : quat.q2,
+             q3 : quat.q3,
+             q4 : quat.q4,
+    AHRS_gSpeed : ahrs.groundspeed(),
+     GPS_gSpeed : gps.ground_speed(),
+     GPS_xSpeed : gps.velocity().x,
+     GPS_ySpeed : gps.velocity().y,
+     GPS_zSpeed : gps.velocity().z,
+       latitude : gps.location().lat,
+      longitude : gps.location().lng,
+       altitude : gps.location().alt,
+    };
+    WriteBlock(&pkt, sizeof(pkt));
+}
+
+void DataFlash_Class::Log_Write_JKF(Vector3f &vel)
+{
+    uint64_t time_us = AP_HAL::micros64();
+
+    const AP_GPS &gps = AP::gps();
+
+    AP_AHRS &ahrs = AP::ahrs();
+
+    float jkf_gspeed = sqrt(vel.x*vel.x + vel.y*vel.y);
+    struct log_JKF pkt = {
+        LOG_PACKET_HEADER_INIT(LOG_JKF_MSG),
+        time_us : time_us,
+         gSpeed : jkf_gspeed,
+         xSpeed : vel.x,
+         ySpeed : vel.y,
+         zSpeed : vel.z,
+    AHRS_gSpeed : ahrs.groundspeed(),
+     GPS_gSpeed : gps.ground_speed(),
+     GPS_xSpeed : gps.velocity().x,
+     GPS_ySpeed : gps.velocity().y,
+     GPS_zSpeed : gps.velocity().z,
+       latitude : gps.location().lat,
+      longitude : gps.location().lng,
+       altitude : gps.location().alt,
+    };
+    WriteBlock(&pkt, sizeof(pkt));
+}
+
+
 // Write an raw accel/gyro data packet
 void DataFlash_Class::Log_Write_IMU()
 {

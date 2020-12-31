@@ -95,6 +95,8 @@ public:
     void Log_Write_Parameter(const char *name, float value);
     void Log_Write_GPS(uint8_t instance, uint64_t time_us=0);
     void Log_Write_RFND(const RangeFinder &rangefinder);
+    void Log_Write_JKF(Vector3f &vel);
+    void Log_Write_JKF_Sensor();
     void Log_Write_IMU();
     void Log_Write_IMUDT(uint64_t time_us, uint8_t imu_mask);
     bool Log_Write_ISBH(uint16_t seqno,

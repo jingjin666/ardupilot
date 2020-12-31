@@ -304,6 +304,8 @@ void Copter::startup_INS_ground()
 
     // reset ahrs including gyro bias
     ahrs.reset();
+
+    JKF.sys_init();
 }
 
 // position_ok - returns true if the horizontal absolute position is ok and home position is set

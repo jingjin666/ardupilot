@@ -104,7 +104,7 @@ const struct UnitStructure log_Units[] = {
     { 's', "s" },             // seconds
     { 'q', "rpm" },           // rounds per minute. Not SI, but sometimes more intuitive than Hertz
     { 'r', "rad" },           // radians
-    { 'U', "deglongitude" },  // degrees of longitude
+    { 'X', "deglongitude" },  // degrees of longitude
     { 'u', "ppm" },           // pulses per minute
     { 'U', "us" },            // pulse width modulation in microseconds
     { 'v', "V" },             // Volt
@@ -191,6 +191,30 @@ struct PACKED log_Message {
     LOG_PACKET_HEADER;
     uint64_t time_us;
     char msg[64];
+};
+
+struct PACKED log_JKF_Sensor {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+#if 0
+    float gyro_x, gyro_y, gyro_z;
+#endif
+    float accel_x, accel_y, accel_z;
+    float q1, q2, q3, q4;
+    float AHRS_gSpeed, GPS_gSpeed, GPS_xSpeed, GPS_ySpeed, GPS_zSpeed;
+    int32_t  latitude;
+    int32_t  longitude;
+    int32_t  altitude;
+};
+
+struct PACKED log_JKF {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float gSpeed, xSpeed, ySpeed, zSpeed;
+    float AHRS_gSpeed, GPS_gSpeed, GPS_xSpeed, GPS_ySpeed, GPS_zSpeed;
+    int32_t  latitude;
+    int32_t  longitude;
+    int32_t  altitude;
 };
 
 struct PACKED log_IMU {
@@ -1117,6 +1141,16 @@ struct PACKED log_DSTL {
 #define ISBD_UNITS  "s--ooo"
 #define ISBD_MULTS  "F--???"
 
+#define JKFS_LABELS "TimeUS,AccX,AccY,AccZ,Q1,Q2,Q3,Q4,AS,GS,VX,VY,VZ,Lat,Lng,Alt"
+#define JKFS_FMT   "QffffffffffffLLe"
+#define JKFS_UNITS "sooo----nnnnnDXm"
+#define JKFS_MULTS "F000000000000GGB"
+
+#define JKF_LABELS "TimeUS,gS,xS,yS,zS,AgS,GgS,GxS,GyS,GzS,Lat,Lng,Alt"
+#define JKF_FMT   "QfffffffffLLe"
+#define JKF_UNITS "snnnnnnnnnDXm"
+#define JKF_MULTS "F000000000GGB"
+
 #define IMU_LABELS "TimeUS,GyrX,GyrY,GyrZ,AccX,AccY,AccZ,EG,EA,T,GH,AH,GHz,AHz"
 #define IMU_FMT   "QffffffIIfBBHH"
 #define IMU_UNITS "sEEEooo--O--zz"
@@ -1200,6 +1234,10 @@ Format characters in the format string for binary log messages
       "GPA2", GPA_FMT, GPA_LABELS, GPA_UNITS, GPA_MULTS }, \
     { LOG_GPAB_MSG, sizeof(log_GPA), \
       "GPAB", GPA_FMT, GPA_LABELS, GPA_UNITS, GPA_MULTS }, \
+    { LOG_JKFS_MSG, sizeof(log_JKF_Sensor), \
+      "JKFS",  JKFS_FMT,     JKFS_LABELS, JKFS_UNITS, JKFS_MULTS }, \
+    { LOG_JKF_MSG, sizeof(log_JKF), \
+      "JKF",  JKF_FMT,     JKF_LABELS, JKF_UNITS, JKF_MULTS }, \
     { LOG_IMU_MSG, sizeof(log_IMU), \
       "IMU",  IMU_FMT,     IMU_LABELS, IMU_UNITS, IMU_MULTS }, \
     { LOG_MESSAGE_MSG, sizeof(log_Message), \
@@ -1463,6 +1501,8 @@ enum LogMessages : uint8_t {
     LOG_GPS_MSG,
     LOG_GPS2_MSG,
     LOG_GPSB_MSG,
+    LOG_JKFS_MSG,
+    LOG_JKF_MSG,
     LOG_IMU_MSG,
     LOG_MESSAGE_MSG,
     LOG_RCIN_MSG,

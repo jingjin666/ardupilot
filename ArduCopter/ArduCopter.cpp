@@ -145,6 +145,7 @@ const AP_Scheduler::Task Copter::scheduler_tasks[] = {
 #endif
 #if LOGGING_ENABLED == ENABLED
     SCHED_TASK(ten_hz_logging_loop,   10,    350),
+    SCHED_TASK(test_hz_logging,      400,    150),
     SCHED_TASK(twentyfive_hz_logging, 25,    110),
     SCHED_TASK_CLASS(DataFlash_Class,      &copter.DataFlash,           periodic_tasks, 400, 300),
 #endif
@@ -360,6 +361,42 @@ void Copter::ten_hz_logging_loop()
     }
 #if FRAME_CONFIG == HELI_FRAME
     Log_Write_Heli();
+#endif
+}
+
+void Copter::test_hz_logging()
+{
+#if 1
+    static uint32_t last_time = 0;
+    float dt = 0;
+    if(last_time == 0)
+        dt = 0;
+    else
+        dt = AP_HAL::millis() - last_time;
+    last_time = AP_HAL::millis();
+    dt *= 0.001;
+
+    Vector3f acc_data = ins.get_accel();
+
+    Quaternion quat;
+    ahrs.get_secondary_quaternion(quat);
+
+    Matrix3f dcm;
+    quat.rotation_matrix(dcm);
+    //Vector3f acc_data_ned = dcm*acc_data;
+    //JKF.sys_predict(dt, acc_data_ned);
+    JKF.sys_predict(dt, acc_data, dcm);
+
+    Vector3f gps_data_ned = gps.velocity();
+    //JKF.sys_update(gps_data_ned);
+    JKF.sys_update(gps_data_ned, dcm);
+
+    Vector3f vel;
+    JKF.getVelocity(vel);
+
+    DataFlash.Log_Write_JKF(vel);
+#else
+    DataFlash.Log_Write_JKF_Sensor();
 #endif
 }
 

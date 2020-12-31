@@ -46,6 +46,7 @@
 #include <AP_AHRS/AP_AHRS.h>
 #include <AP_NavEKF2/AP_NavEKF2.h>
 #include <AP_NavEKF3/AP_NavEKF3.h>
+#include <AP_NavEKF2/AP_NavJKF.h>
 #include <AP_Mission/AP_Mission.h>     // Mission command library
 #include <AC_PID/AC_P.h>               // P library
 #include <AC_PID/AC_PID.h>             // PID library
@@ -256,6 +257,8 @@ private:
     NavEKF2 EKF2{&ahrs, rangefinder};
     NavEKF3 EKF3{&ahrs, rangefinder};
     AP_AHRS_NavEKF ahrs{EKF2, EKF3, AP_AHRS_NavEKF::FLAG_ALWAYS_USE_EKF};
+
+    AP_NavJKF JKF{&ahrs};
 
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
     SITL::SITL sitl;
@@ -669,6 +672,7 @@ private:
     void update_batt_compass(void);
     void fourhundred_hz_logging();
     void ten_hz_logging_loop();
+    void test_hz_logging();
     void twentyfive_hz_logging();
     void three_hz_loop();
     void one_hz_loop();
